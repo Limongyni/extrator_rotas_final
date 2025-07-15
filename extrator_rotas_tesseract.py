@@ -4,6 +4,8 @@ import pandas as pd
 import re
 import io
 from PIL import Image
+import numpy as np  # ← ESTA LINHA É O QUE FALTAVA
+
 
 st.set_page_config(page_title="Extrator de Rotas", page_icon="📦")
 st.title("📦 Extrator de Endereços de Rotas")

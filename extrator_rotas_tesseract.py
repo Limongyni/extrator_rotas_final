@@ -4,23 +4,19 @@ import pandas as pd
 import re
 import io
 from PIL import Image
-import numpy as np  # ← ESTA LINHA É O QUE FALTAVA
-
+import numpy as np
 
 st.set_page_config(page_title="Extrator de Rotas", page_icon="📦")
 st.title("📦 Extrator de Endereços de Rotas")
 st.markdown("Envie **um ou mais prints** de rotas para extrair os endereços, CEPs e pacotes automaticamente.")
 
-# Inputs da cidade e estado
 cidade = st.text_input("Cidade", "São José dos Campos")
 estado = st.text_input("Estado", "São Paulo")
 
-# Função para formatar CEP
 def formatar_cep(cep):
     cep = ''.join(filter(str.isdigit, str(cep)))
     return f"{cep[:5]}-{cep[5:]}" if len(cep) == 8 else cep
 
-# Função de extração por imagem
 def extrair_dados_texto(linhas, cidade, estado):
     dados = []
     i = 0
@@ -31,15 +27,14 @@ def extrair_dados_texto(linhas, cidade, estado):
             i += 1
             continue
 
-        # Endereço
-        match_endereco = re.match(r'^(.*?\\d{1,5})\\b', linha)
+        match_endereco = re.match(r'^(.*?\d{1,5})\b', linha)
         endereco = match_endereco.group(1) if match_endereco else linha
 
         bairro, cep, unidades, parada = '', '', '', ''
 
         if i + 1 < len(linhas) and 'CEP' in linhas[i + 1]:
-            bairro_match = re.search(r'^(.*?),?\\s*CEP', linhas[i + 1])
-            cep_match = re.search(r'CEP\\s*(\\d{8})', linhas[i + 1])
+            bairro_match = re.search(r'^(.*?),?\s*CEP', linhas[i + 1])
+            cep_match = re.search(r'CEP\s*(\d{8})', linhas[i + 1])
             if bairro_match:
                 bairro = bairro_match.group(1).strip()
             if cep_match:
@@ -50,12 +45,12 @@ def extrair_dados_texto(linhas, cidade, estado):
             i += 1
 
         if i + 1 < len(linhas) and 'Entrega' in linhas[i + 1]:
-            unidades_match = re.search(r'Entrega\\s+(\\d+)\\s+unidade', linhas[i + 1])
+            unidades_match = re.search(r'Entrega\s+(\d+)\s+unidade', linhas[i + 1])
             if unidades_match:
                 qtd = unidades_match.group(1)
                 unidades = f"{qtd} pacote" if qtd == '1' else f"{qtd} pacotes"
 
-            etiqueta_match = re.search(r'NX\\d+[_\\-\\. ]*(\\d{1,3})', linhas[i + 1])
+            etiqueta_match = re.search(r'NX\d+[_\-\. ]*(\d{1,3})', linhas[i + 1])
             if etiqueta_match:
                 parada = f"Parada {etiqueta_match.group(1)}"
             i += 1
@@ -74,7 +69,6 @@ def extrair_dados_texto(linhas, cidade, estado):
         i += 1
     return dados
 
-# Upload múltiplo
 arquivos = st.file_uploader("Envie os prints das rotas (JPG ou PNG)", type=["jpg", "jpeg", "png"], accept_multiple_files=True)
 
 if arquivos:
